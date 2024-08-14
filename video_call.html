@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Call</title>
+  <style>
+    #video-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    video {
+      border: 2px solid black;
+      width: 45%;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+  </div>
+
+  <script>
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+
+    let localStream;
+    let peerConnection;
+    const servers = null; // Use default STUN/TURN servers
+
+    const constraints = {
+      audio: true,
+      video: true
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(stream => {
+        localVideo.srcObject = stream;
+        localStream = stream;
+        startConnection();
+      })
+      .catch(error => console.error('Error accessing media devices.', error));
+
+    function startConnection() {
+      peerConnection = new RTCPeerConnection(servers);
+
+      peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+          // Send ICE candidate to remote peer
+        }
+      };
+
+      peerConnection.ontrack = event => {
+        remoteVideo.srcObject = event.streams[0];
+      };
+
+      localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+      });
+
+      // Create and send offer to remote peer
+      peerConnection.createOffer()
+        .then(offer => peerConnection.setLocalDescription(offer))
+        .then(() => {
+          // Send offer to remote peer
+        })
+        .catch(error => console.error('Error creating offer.', error));
+    }
+
+    // Handle incoming offer, answer, and ICE candidates here
+  </script>
+</body>
+</html>
